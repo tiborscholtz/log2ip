@@ -1,0 +1,9 @@
+{
+  "authentication failure; logname=":"authentication failure",
+  "connection from ":"Connection",
+  "Failed password for invalid user":"Failed password for invalid user",
+  "Received disconnect from ":"Received disconnect",
+  "Connection closed by ":"Connection closed",
+  "Failed password for ":"Failed password",
+  "Received SNMP packet(s) from":"Received SNMP packet"
+}
