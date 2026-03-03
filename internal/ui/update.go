@@ -76,6 +76,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.Mode == "search" {
 			if (previousTextFocus == false && msg.String() != ":") || (previousTextFocus == true) {
 				m.TextInput, cmd = m.TextInput.Update(msg)
+				m.Table = CreateCurrentTable(m)
 			}
 		}
 		return m, nil

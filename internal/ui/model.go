@@ -2,6 +2,7 @@ package ui
 
 import (
 	"strconv"
+	"strings"
 	"tiborscholtz/log2ip/internal/domain"
 
 	"github.com/charmbracelet/bubbles/table"
@@ -24,6 +25,24 @@ type model struct {
 	ColumnIndex       int
 }
 
+func matchesSearch(e domain.LogEntry, search string, simple bool) bool {
+	if search == "" {
+		return true
+	}
+
+	search = strings.ToLower(search)
+
+	message := e.Message
+	if simple {
+		message = e.SimpleMessage.(string)
+	}
+
+	return strings.Contains(strings.ToLower(e.Date), search) ||
+		strings.Contains(strings.ToLower(e.Address), search) ||
+		strings.Contains(strings.ToLower(e.ServiceName), search) ||
+		strings.Contains(strings.ToLower(message), search)
+}
+
 func currentColumn(defaultText string, i int, m model) string {
 	if i == m.ColumnIndex && m.Mode == "table" {
 		return defaultText + "*"
@@ -39,22 +58,29 @@ func CreateCurrentTable(m model) table.Model {
 		{Title: currentColumn("Service", 3, m), Width: 10},
 		{Title: currentColumn("Text", 4, m), Width: 200},
 	}
-	rows := make([]table.Row, 0, 0)
+	rows := make([]domain.LogEntry, 0, 0)
+	for i := 0; i < len(m.Data); i++{
+		e := m.Data[i]
+		if matchesSearch(e, m.TextInput.Value(), m.ShowSimpleMessage) {
+			rows = append(rows, e)
+		}
+	}
+	finalRows := make([]table.Row, 0, 0)
 	for i := (m.Limit * m.Page) - m.Limit; i < ((m.Limit*m.Page)+m.Limit)-m.Limit; i++ {
-		if i > (len(m.Data) - 1) {
+		if i > (len(rows) - 1) {
 			break
 		}
-		e := m.Data[i]
+		e := rows[i]
 		current_message := e.Message
 		if m.ShowSimpleMessage == true {
 			current_message = e.SimpleMessage.(string)
 		}
-		rows = append(rows, table.Row{strconv.Itoa(i + 1), e.Date, e.Address, e.ServiceName, current_message})
+		finalRows = append(finalRows, table.Row{strconv.Itoa(i + 1), e.Date, e.Address, e.ServiceName, current_message})
 	}
 
 	t := table.New(
 		table.WithColumns(columns),
-		table.WithRows(rows),
+		table.WithRows(finalRows),
 		table.WithFocused(true),
 		table.WithHeight(m.RowLimit+1),
 	)
