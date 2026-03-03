@@ -25,22 +25,25 @@ type model struct {
 	ColumnIndex       int
 }
 
-func matchesSearch(e domain.LogEntry, search string, simple bool) bool {
-	if search == "" {
+func matchesSearch(e domain.LogEntry, search []string, simple bool) bool {
+	if len(search) == 0 {
 		return true
 	}
 
-	search = strings.ToLower(search)
 
 	message := e.Message
 	if simple {
 		message = e.SimpleMessage.(string)
 	}
-
-	return strings.Contains(strings.ToLower(e.Date), search) ||
-		strings.Contains(strings.ToLower(e.Address), search) ||
-		strings.Contains(strings.ToLower(e.ServiceName), search) ||
-		strings.Contains(strings.ToLower(message), search)
+	allFound := true
+	for i := 0; i < len(search); i++{
+		toSearch := (strings.ToLower(e.Date) + " " + strings.ToLower(e.Address) + strings.ToLower(e.ServiceName) + strings.ToLower(message))
+		if strings.Contains(toSearch,search[i]) == false{
+			allFound = false
+			break
+		}
+	}
+	return allFound;
 }
 
 func currentColumn(defaultText string, i int, m model) string {
@@ -59,9 +62,10 @@ func CreateCurrentTable(m model) table.Model {
 		{Title: currentColumn("Text", 4, m), Width: 200},
 	}
 	rows := make([]domain.LogEntry, 0, 0)
+	fields := strings.Fields(m.TextInput.Value())
 	for i := 0; i < len(m.Data); i++{
 		e := m.Data[i]
-		if matchesSearch(e, m.TextInput.Value(), m.ShowSimpleMessage) {
+		if matchesSearch(e, fields, m.ShowSimpleMessage) {
 			rows = append(rows, e)
 		}
 	}

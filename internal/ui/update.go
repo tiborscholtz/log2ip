@@ -42,12 +42,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.Table = CreateCurrentTable(m)
 			}
 		case "left":
-			if m.Page > 1 {
+			if m.Page > 1 && m.Mode != "search" {
 				m.Page -= 1
 				m.Table = CreateCurrentTable(m)
 			}
 		case "right":
-			if m.Page < (m.TotalPage) {
+			if m.Page < (m.TotalPage) && m.Mode != "search" {
 				m.Page += 1
 				m.Table = CreateCurrentTable(m)
 			}
